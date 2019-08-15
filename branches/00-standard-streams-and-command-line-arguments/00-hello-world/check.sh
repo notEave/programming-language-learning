@@ -6,7 +6,9 @@ set -euo pipefail
 
 # TODO Parallelize running of checks
 # for when a problem might require internet access
-for check in .components/check_[[:digit:]].sh
+checks=".components/[[:digit:]][[:digit:]]-check.sh"
+for check in ${checks}
 do
-     bash "$check" "${@}"
+    echo 'Running check' "$(basename "$check")"
+    bash "$check" "${@}"
 done

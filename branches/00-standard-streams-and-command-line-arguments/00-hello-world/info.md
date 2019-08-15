@@ -1,4 +1,4 @@
-# Hello world
+# Standard streams and command line arguments - Hello world
 
 ## Assignment
 
@@ -13,19 +13,19 @@ check with the command `./check.sh sh %assignment_name.sh`.
 
 ### Check 1
 
+#### Notes
+
+`-`
+
 #### Input
-
-##### Notes
-
---
 
 ##### Standard input
 
---
+`-`
 
 ##### Arguments
 
---
+`-`
 
 #### Expected output
 
@@ -35,4 +35,8 @@ check with the command `./check.sh sh %assignment_name.sh`.
 
 ##### Standard error
 
---
+`-`
+
+##### Exit code
+
+`0`
