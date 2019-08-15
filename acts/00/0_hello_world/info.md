@@ -1,15 +1,16 @@
 # Hello world
 
+## Assignment
 Implement a program that writes "Hello world" to standard output.
 
-## Tests
+## Checks
 
-Test your program by running the bash script `test.sh` followed by the
+Check your program by running the bash script `check.sh` followed by the
 command necessary to execute your program. For example, if your
 program were a shell script called `hello_world.sh` you would execute
-the test with the command `./test.sh sh hello_world.sh`.
+the check with the command `./check.sh sh hello_world.sh`.
 
-### Test 1
+### Check 1
 
 #### Input
 
