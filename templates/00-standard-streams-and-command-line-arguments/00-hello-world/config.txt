@@ -1,0 +1,26 @@
+@BRANCH
+Standard streams and command-line arguments
+
+@TITLE
+Hello, world!
+
+@ASSIGNMENT
+Compose a program that writes "Hello, world!" to standard output and
+exits with code 0.
+
+@SCRIPT
+hello_world.sh
+
+@NOTES_1
+
+@STDIN_1
+
+@ARGS_1
+
+@STDOUT_1
+Hello, world!
+
+@STDERR_1
+
+@EXIT_1
+0
