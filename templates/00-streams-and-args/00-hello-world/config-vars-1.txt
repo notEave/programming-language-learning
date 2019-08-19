@@ -1,0 +1,16 @@
+@CHECK_NUM
+1
+
+@NOTES
+
+@STDIN
+
+@ARGS
+
+@STDOUT
+Hello, world!
+
+@STDERR
+
+@EXIT
+0
