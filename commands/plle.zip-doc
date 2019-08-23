@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+[ -v DEBUG ] && set -x
+
+#
+# plle.zip-doc
+#
+# # Zip up a config file and an ms document
+#
+
+function usage {
+    echo 'TBA'
+    exit 0
+}
+
+# Print usage and exit if the argument list is empty
+[ $# -eq 0 ] && usage
+
+config="${1}"
+document="${2}"
+
+# Make sure mandatory arguments are set
+[ -z "${config}" ] && usage
+[ -z "${document}" ] && usage
+
+while read -r line
+do
+    if grep '^\[.*]' <<< "${line}" > /dev/null
+    then
+        value=$(plle.readk -k "${line}" "${config}")
+        echo "${value:--}"
+    else
+        echo "${line}"
+    fi
+done < "${document}"

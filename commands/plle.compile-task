@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+
+[ -v DEBUG ] && set -x
+
+srcdir=$(readlink -f "${BASH_SOURCE[0]}" | xargs dirname)
+envroot="${srcdir}/.."
+
+function usage {
+    echo 'TBA'
+    exit 0
+}
+
+# Print usage and exit if the argument list is empty
+[ $# -eq 0 ] && usage
+
+task="${1}"
+target="${2}"
+
+# Make sure mandatory arguments are set
+[ -z "${task}" ] && usage
+[ -z "${target}" ] && usage
+
+# Let's make sure the directories exist
+
+if [ ! -d "${task}" ]
+then
+    echo "Task ${task} doesn't exist"
+    exit 1
+fi
+
+if [ -d "{target}" ]
+then
+    echo "Target ${target} doesn't exist'"
+    exit 1
+fi
+
+# Get the real basename of our task directory
+
+bname=$(readlink -f "${task}" | xargs basename)
+
+# Create a temporary directory for our work
+tempdir=$(mktemp -t -d "plle.compile-task.${bname}.XXXXXX")
+workdir="${tempdir}/${bname}.$(plle.readk -k time "${task}/conf.txt")"
+mkdir "${workdir}"
+# Copy over the conffile
+cp "${task}/conf.txt" "${workdir}"
+
+# Append it with the name of the branch the task resides in
+(echo;
+ echo;
+ echo '[branch]';
+ plle.readk -k 'branch' "${task}/../conf.txt"
+ echo) >> "${workdir}/conf.txt"
+
+# Create a hidden directory for all our checks
+mkdir "${workdir}/.checks"
+
+# Compile our checks into the hidden directory
+for check in $(echo "${task}/"[0-9]*)
+do
+    plle.compile-check "${check}" "${workdir}/.checks"
+done
+
+# We still need to put together the pdf document
+docgen=$(mktemp -t -d "plle.compile-task.docgen.XXXXXX")
+
+# Zip our main document together
+plle.zip-doc "${workdir}/conf.txt" "${envroot}/sources/docdef.ms" \
+             > "${docgen}/task.ms"
+
+# Append the document with descriptionss of each check
+find "${workdir}/.checks" -name '*.doc.ms' | sort | while read -r doc
+do
+    (echo;
+     echo;
+     cat "${doc}") >> "${docgen}/task.ms"
+done
+
+# Turn it into a pdf and copy it over to our original temp directory
+groff -ms -T pdf "${docgen}/task.ms" > "${workdir}/task.pdf"
+
+# All work is done, just move our complete task into target
+mv "${workdir}" "${target}"
+
+# Clean up the temporary directories
+rm -r "${tempdir}"
+rm -r "${docgen}"

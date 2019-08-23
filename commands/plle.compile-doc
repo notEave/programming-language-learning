@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+[ -v DEBUG ] && set -x
+
+#
+# plle.compile-doc
+#
+# Compile the documentation of a task into a pdf
+#
+
+srcdir=$(readlink -f "${BASH_SOURCE[0]}" | xargs dirname)
+envroot="${srcdir}/.."
+taskdir="${1}"
+
+function usage {
+         echo 'TBA'
+         exit 0
+}
+
+[ $# -eq 0 ] && usage
+
+tempdir=$(mktemp -t -d 'plle.compile-doc.XXXXXX')
+
+# Create a named pipe for feeding processed ms document data
+fifo="${tempdir}/fifo"
+mkfifo -m600 "${fifo}"
+# Make groff read the pipe and turn the data into a pdf
+# TODO output this somewhere
+groff -ms -T pdf "${fifo}" &
+exec 3> "${fifo}"
+
+# Write a unified config file into a temp directory
+# Starting with the branch key
+(cat '-' "${taskdir}/../branch.txt" <<< '[branch]';
+ echo;
+ echo '[script]';
+ basename "${taskdir}" | cut -c 6-
+ echo;
+ cat "${taskdir}/conf.txt") >> "${tempdir}/config.txt"
+
+"${srcdir}/plle.zip-doc" -c "${tempdir}/config.txt" -d "${envroot}/sources/docdef.ms" > "${fifo}"
+exec 3>&-
+
+# Delete the temporary files
+rm "${fifo}" "${tempdir}/config.txt"
+rmdir "${tempdir}"

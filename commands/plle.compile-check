@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+
+[ -v DEBUG ] && set -x
+
+srcdir=$(readlink -f "${BASH_SOURCE[0]}" | xargs dirname)
+envroot="${srcdir}/.."
+
+function usage {
+    echo 'TBA'
+    exit 0
+}
+
+# Print usage and exit if the argument list is empty
+[ $# -eq 0 ] && usage
+
+check="${1}"
+target="${2}"
+
+# Make sure mandatory arguments are set
+[ -z "${check}" ] && usage
+[ -z "${target}" ] && usage
+
+# Lets make sure the directories actually exist
+
+if [ ! -d "${check}" ]
+then
+    echo "Check ${check} doesn't exist"
+    exit 1
+fi
+
+if [ -d "{target}" ]
+then
+    echo "Target ${target} doesn't exist'"
+    exit 1
+fi
+
+# Get the real basename of our check directory
+bname=$(readlink -f "${check}" | xargs basename)
+
+# Create a temporary directory for our work
+tempdir=$(mktemp -t -d "plle.compile-check.${bname}.XXXXXX")
+
+# Copy the check directory into our temporary directory
+cp -r "${check}" "${tempdir}"
+
+# The documentation contains a checknum field that our config is missing
+# We add it by looking at how many directories are in check/.. dir
+# and finding the position of our check dir within that structure
+(echo;
+ echo;
+ echo '[checknum]';
+ ls -l "${check}/.." \
+     | grep '^d' \
+     | cut -d ' ' -f9 \
+     | grep -n "${bname}" \
+     | cut -d ':' -f1)\
+    >> "${tempdir}/${bname}/conf.txt"
+
+# Zip our configuration with a template groff ms document
+plle.zip-doc "${tempdir}/${bname}/conf.txt"\
+             "${envroot}/sources/docdef-check.ms" \
+             > "${tempdir}/${bname}/${bname}.doc.ms"
+
+# Now that we are done with compiling move the complete dir to our real target
+mv "${tempdir}/${bname}" "${target}"
+
+# And delete the temp directory
+rm -r "${tempdir}"

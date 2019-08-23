@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+#
+# plle.venv
+#
+
+bins=$(readlink -f "${BASH_SOURCE[0]}" | xargs dirname)
+
+export PATH="${PATH%%:${bins}}"
+export PATH="${PATH}:${bins}"
+
+while getopts 'r' opt
+do
+    case "${opt}"
+    in
+        r)
+            export PATH="${PATH%%:${bins}}"
+            ;;
+        *)
+            ;;
+    esac
+done

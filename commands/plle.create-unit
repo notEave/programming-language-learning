@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+
+#
+# plle.create-unit
+#
+
+[ -v DEBUG ] && set -x
+
+srcdir=$(readlink -f "${BASH_SOURCE[0]}" | xargs dirname)
+envroot="${srcdir}/.."
+
+function usage {
+    echo 'TBA'
+    exit 0
+}
+
+# Print usage and exit if argument list is empty
+[ $# -eq 0 ] && usage
+
+while getopts t:c opt
+do
+    case "${opt}"
+    in
+        t)
+            task="${OPTARG}"
+            ;;
+        c)
+            check=true
+            ;;
+        *)
+            usage
+            ;;
+    esac
+done
+
+shift $(("${OPTIND}" - 1))
+branch="${1}"
+
+# Make sure mandatory branch value exists
+[ -z "${branch}" ] && usage
+
+# If check is set then task needs to be set as well
+if [ -n "${check}" ]
+then
+    [ -z "${task}" ] && usage
+fi
+
+# If a branch doesn't exist we create it
+if [ ! -d "${branch}" ]  && [ -e "${branch}" ]
+then
+    echo "Branch ${branch} exists but is not a directory"
+    exit 1
+elif [ ! -d "${branch}" ]
+then
+    # Get the real basename of the branch
+    bname=$(readlink -f "${branch}" | xargs basename)
+    mkdir -p "${branch}"
+    (echo '[branch]';
+     echo "${bname}";
+     echo
+     echo '[time]';
+     date +%s;
+     echo) > "${branch}/conf.txt"
+fi
+
+# If task is not set we can exit, any code after this expects task to be set
+[ -z "${task}" ] && exit 0
+
+# Task arguments are given as local directories so we change to branch
+# directory to ease the next part
+cd "${branch}" || exit 1
+
+# If a task doesn't exist we create it
+if [ ! -d "${task}" ] && [ -e "${task}" ]
+then
+    echo "Task ${task} exists but is not a directory"
+    exit 1
+elif [ ! -d "${task}" ]
+then
+    mkdir "${task}"
+    (echo '[title]';
+     echo "${task}";
+     echo;
+     echo '[script]';
+     echo "${task}";
+     echo;
+     echo '[description]';
+     echo;
+     echo '[time]';
+     date +%s;
+     echo) > "${task}/conf.txt"
+fi
+
+# Finally, let's handle the creation of a task
+[ "${check}" ] || exit 0
+
+# Let's change to our branch
+cd "${task}" || exit 1
+
+checkdir="$(date +%s)"
+mkdir "${checkdir}"
+cd "${checkdir}" || exit 1
+(echo '[notes]';
+ echo;
+ echo '[stdin]';
+ echo;
+ echo '[args]';
+ echo;
+ echo '[stdout]';
+ echo;
+ echo '[stderr]';
+ echo;
+ echo '[code]';
+ echo) > 'conf.txt'
+
+# Copy a prebaked check script into our check directory,
+# this can be modified to incorporate additional checks
+cp "${envroot}/sources/check.sh" .
+chmod +x 'check.sh'

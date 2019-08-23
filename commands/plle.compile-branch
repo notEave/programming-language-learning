@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+
+[ -v DEBUG ] && set -x
+
+srcdir=$(readlink -f "${BASH_SOURCE[0]}" | xargs dirname)
+envroot="${srcdir}/.."
+
+function usage {
+    echo 'TBA'
+    exit 0
+}
+
+# Print usage and exit if the argument list is empty
+[ $# -eq 0 ] && usage
+
+branch="${1}"
+target="${2}"
+
+# Make sure mandatory arguments are set
+[ -z "${branch}" ] && usage
+[ -z "${target}" ] && usage
+
+# Let's make sure the directories exist
+
+if [ ! -d "${branch}" ]
+then
+    echo "Branch ${branch} doesn't exist"
+    exit 1
+fi
+
+if [ -d "{target}" ]
+then
+    echo "Target ${target} doesn't exist'"
+    exit 1
+fi
+
+# Get the real basename of our branch directory
+
+bname=$(readlink -f "${branch}" | xargs basename)
+
+# Create a temporary directory for our work
+tempdir=$(mktemp -t -d "plle.compile-branch.${bname}.XXXXXX")
+workdir="${tempdir}/${bname}"
+mkdir "${workdir}"
+
+# Compile all tasks of the branch into our work dir
+
+find "${branch}"* -maxdepth 0 -type d | while read -r task
+do
+    echo "${task}"
+    plle.compile-task "${task}" "${workdir}"
+done
+
+# Once all done move over the temp dir to target
+mv "${workdir}" "${target}"
+
+# And delete the temp
+rm -r "${tempdir}"
+
