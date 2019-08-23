@@ -1,6 +1,0 @@
-Isolate assignment in the info.md file to its own document so that it
-can be re-inserted programmatically back in to info.md. Do the same for
-the Checks field.  Write the checks alluded to in info.md as a bash
-script.  A top level script assemble_test.sh should pull the
-assignment and the test files and assemble them into a single info.md
-file.
