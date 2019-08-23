@@ -1,0 +1,13 @@
+[notes]
+
+[stdin]
+
+[args]
+
+[stdout]
+Hello, world!
+
+[stderr]
+
+[code]
+0
