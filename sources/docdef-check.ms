@@ -22,7 +22,9 @@ Command-line arguments
 .LP
 .LB
 .ft CW
+.nf
 [args]
+.fi
 .ft
 .LE
 .SH 3
@@ -33,7 +35,9 @@ Standard output
 .LP
 .LB
 .ft CW
+.nf
 [stdout]
+.fi
 .ft
 .LE
 .SH 4
@@ -41,7 +45,9 @@ Standard error
 .LP
 .LB
 .ft CW
+.nf
 [stderr]
+.fi
 .ft
 .LE
 .SH 4
@@ -49,6 +55,8 @@ Exit code
 .LP
 .ft CW
 .LB
+.nf
 [code]
+.fi
 .LE
 .ft

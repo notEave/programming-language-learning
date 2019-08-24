@@ -7,63 +7,59 @@
 [ -v DEBUG ] && set -x
 
 srcdir=$(readlink -f "${BASH_SOURCE[0]}" | xargs dirname)
-rundir="${srcdir}/.."
+conff="${srcdir}/conf.txt"
 
-cd "${srcdir}" || exit 1
+# Compile together our inputs and outputs
+notes=$(plle.readk -k 'notes' "${conff}")
+args=$(plle.readk -k 'args' "${conff}")
+stdin=$(plle.readk -k 'stdin' "${conff}")
+stdout=$(plle.readk -k 'stdout' "${conff}")
+stderr=$(plle.readk -k 'stderr' "${conff}")
+code=$(plle.readk -k 'code' "${conff}")
+checknum=$(plle.readk -k 'checknum' "${conff}")
 
-function exec-check {
-    notes=$(plle.readk -k 'notes' -f 'conf.txt')
-    args=$(plle.readk -k 'args' -f 'conf.txt')
-    stdin=$(plle.readk -k 'stdin' -f 'conf.txt')
-    stdout=$(plle.readk -k 'stdout' -f 'conf.txt')
-    stderr=$(plle.readk -k 'stderr' -f 'conf.txt')
-    code=$(plle.readk -k 'code' -c 'conf.txt')
-    
-    # We want to record output into temporary files for later
-    # inspection
-    stdoutf="$(mktemp -t stdout.XXXXXX)"
-    stderrf="$(mktemp -t stdout.XXXXXX)"
-    # Actual execution of the program, outputs redirected
-    cd "${rundir}" || exit 1
-    "${@}" "${args}" > "${stdoutf}" 2> "${stderrf}" <<< "${stdin}"
-    ecode="$?"
-    echo "Notes: ${notes:--}"
-    echo 'Standard output:'
-    diff -B --color "${stdoutf}" <(echo "${stdout}") && echo '-'
-    echo 'Standard error:'
-    diff -B --color "${stderrf}" <(echo "${stderr}") && echo '-'
-    echo 'Exit code:'
-    diff -B --color <(echo "${ecode}") <(echo "${code}") && echo '-'
-}
+# We want to record output/error into temporary files
+outf=$(mktemp -t stdout.XXXXXX)
+errf=$(mktemp -t stderr.XXXXXX)
 
-exec-check "${@}"
+# Program execution
+"${@}" "${args}" > "${outf}" 2> "${errf}" <<< "${stdin}"
+ecode="${?}"
+nofail=0
 
-#### Additional checks after this line
+# Print diagnostics about the test
+echo "Check ${checknum}"
+echo 'Standard input:'
+echo "${stdin:--}"
+echo 'Command-line arguments:'
+echo "${args:--}"
+echo "Notes:"
+echo "${notes:--}"
 
-# We want to record output into temporary files for later inspection
-#stdoutfile="$(mktemp -t stdout.XXXXXX)"
-#stderrfile="$(mktemp -t stderr.XXXXXX)"
+echo 'Standard output:'
+diff -c -B --color "${outf}" <(echo "${stdout}")
+diffexit="${?}"
+[ "${diffexit}" -eq 0 ] && echo '-'
+[ "${diffexit}" -gt "${nofail}" ] && nofail=1
 
-# Actual execution of the program, outputs redirected
-#set +e
-#"${@}" "${args}" > "${stdoutfile}" 2> "${stderrfile}" <<< "${stdin}"
-#code="$?"
-#set -e
+echo 'Standard error:'
+diff -c -B --color "${errf}" <(echo "${stderr}")
+diffexit="${?}"
+[ "${diffexit}" -eq 0 ] && echo '-'
+[ "${diffexit}" -gt "${nofail}" ] && nofail=1
 
-#echo "Notes: ${notes:--}"
+echo 'Exit code:'
+diff -c -B --color <(echo "${ecode}") <(echo "${code}")
+diffexit="${?}"
+[ "${diffexit}" -eq 0 ] && echo '-'
+[ "${diffexit}" -gt "${nofail}" ] && nofail=1
 
-#echo 'Standard output:'
-#set +e
-#diff -B --color "${stdoutfile}" <(echo "${stdout}") && echo '-' || exit 1
-#set -e
+########################################
+# Additional checks after this comment #
+########################################
 
-#echo 'Standard error:'
-#set +e
-#diff -B --color "${stderrfile}" <(echo "${stderr}") && echo '-' || exit 1
-#set -e
+##############################
+# Additional checks end here #
+##############################
 
-
-#echo 'Exit code:'
-#set +e
-#diff -B --color <(echo "${code}") <(echo "${exitcode}") && echo '-' || exit 1
-#set -e
+exit "${nofail}"
