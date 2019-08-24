@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+[ -v DEBUG ] && set -x
+
+function usage {
+    echo 'TBA'
+    exit 0
+}
+
+# We are guaranteed to be in the tasks root directory so just look for
+# all checks
+
+find '.checks' -maxdepth 2 -type f -name check.sh \
+    | sort | while read -r check
+do
+    if ! command "${check}" "${@}"
+    then
+        echo "Failed check ${check}" >&2
+        exit 1
+    fi
+done
+
+echo 'All tests ran successfully!'
