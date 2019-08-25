@@ -1,6 +1,6 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
-[ -v DEBUG ] && set -x
+[ -n "${DEBUG}" ] && set -x
 
 #
 # plle.compile-doc
