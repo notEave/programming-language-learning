@@ -37,19 +37,19 @@ echo "Notes:"
 echo "${notes:--}"
 
 echo 'Standard output:'
-diff -c -B --color "${outf}" <(echo "${stdout}")
+diff -B --color "${outf}" <(echo "${stdout}")
 diffexit="${?}"
 [ "${diffexit}" -eq 0 ] && echo '-'
 [ "${diffexit}" -gt "${nofail}" ] && nofail=1
 
 echo 'Standard error:'
-diff -c -B --color "${errf}" <(echo "${stderr}")
+diff -B --color "${errf}" <(echo "${stderr}")
 diffexit="${?}"
 [ "${diffexit}" -eq 0 ] && echo '-'
 [ "${diffexit}" -gt "${nofail}" ] && nofail=1
 
 echo 'Exit code:'
-diff -c -B --color <(echo "${ecode}") <(echo "${code}")
+diff -B --color <(echo "${ecode}") <(echo "${code}")
 diffexit="${?}"
 [ "${diffexit}" -eq 0 ] && echo '-'
 [ "${diffexit}" -gt "${nofail}" ] && nofail=1
