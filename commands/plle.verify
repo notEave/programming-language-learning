@@ -1,14 +1,52 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
-[ -v DEBUG ] && set -x
+[ -n "${DEBUG}" ] && set -x
 
-function usage {
-    echo 'TBA'
+usage () {
+    echo "Usage: $(basename "${0}") [-dh] command..."
+    echo 'Verify the command with checks in current working directory'
+    echo '	-d dir	use an alternate working directory'
+    echo '	-h	display this help message'
     exit 0
 }
 
-# We are guaranteed to be in the tasks root directory so just look for
-# all checks
+while getopts d:h opt
+do
+    case "${opt}"
+    in
+        d)
+            cd "${OPTARG}" || exit 1
+            ;;
+        h | *)
+            usage
+            ;;
+    esac
+done
+
+shift $(("${OPTIND}" - 1))
+
+# Make sure we have the mandatory argument
+if [ "${#}" -lt 1 ]
+then
+    echo 'Missing mandatory command' >&2
+    usage
+fi
+
+# Command argument should be executable
+if [ ! -x "${1}" ]
+then
+    echo 'Mandatory command is not executable' >&2
+    exit 1
+fi
+
+# Minimal sanity checking
+if [ ! -d '.checks' ]
+then
+    echo 'No .checks directory' >&2
+    exit 1
+fi
+
+# Look for all checks and execute them in order
 find '.checks' -maxdepth 2 -type f -name check.sh \
     | sort | while read -r check
 do
