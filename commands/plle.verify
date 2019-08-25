@@ -9,7 +9,6 @@ function usage {
 
 # We are guaranteed to be in the tasks root directory so just look for
 # all checks
-
 find '.checks' -maxdepth 2 -type f -name check.sh \
     | sort | while read -r check
 do
