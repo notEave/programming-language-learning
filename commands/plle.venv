@@ -1,22 +1,26 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 #
 # plle.venv
 #
 
-bins=$(readlink -f "${BASH_SOURCE[0]}" | xargs dirname)
+apath=$(dirname "$(realpath "${0}")")
 
-export PATH="${PATH%%:${bins}}"
-export PATH="${PATH}:${bins}"
+usage () {
+    echo "Usage: source $(basename "${0}") [-h]"
+    echo 'Append the directory of this script to PATH'
+    echo '	-h	display this help message'
+    exit 0
+}
 
-while getopts 'r' opt
+while getopts h opt
 do
     case "${opt}"
     in
-        r)
-            export PATH="${PATH%%:${bins}}"
-            ;;
-        *)
+        h | *)
+            usage
             ;;
     esac
 done
+
+export PATH="${PATH}:${apath}"
